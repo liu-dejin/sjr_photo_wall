@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>荣荣佳人影</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: 'Open Sans', Arial, sans-serif;
+        background: linear-gradient(
+          45deg,
+          #ff9a9e 0%,
+          #fecfef 99%,
+          #fecfef 100%
+        );
+        margin: 0;
+        padding: 0;
+      }
+
+      h1 {
+        text-align: center;
+        color: #ff6b6b;
+        margin-top: 50px;
+        font-size: 3em;
+        font-weight: 300;
+        text-shadow: 1px 1px 3px #ff6b6b;
+        font-family: 'Montserrat', Arial, sans-serif;
+      }
+
+      .photo-container {
+        background: #ffffff;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 30px;
+        padding: 40px;
+        margin: 0 auto;
+        max-width: 1000px;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .photo {
+        overflow: hidden;
+        border-radius: 15px;
+        border: 2px solid #ddd;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.4s ease, box-shadow 0.4s ease,
+          border-color 0.4s ease;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      .photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.4s ease;
+      }
+
+      .photo::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        border-radius: 15px;
+      }
+
+      .photo:hover {
+        transform: scale(1.7);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        border-color: #3498db;
+        z-index: 1;
+      }
+
+      .photo:hover::before {
+        opacity: 1;
+      }
+
+      .photo:hover img {
+        opacity: 0.9;
+      }
+
+      @media only screen and (max-width: 768px) {
+        .photo-container {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 20px;
+          padding: 20px;
+          margin: 20px auto;
+        }
+      }
+
+      /* Alert Box Style */
+      .alert-box {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+      }
+
+      .alert-box button {
+        margin: 5px;
+      }
+
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>荣荣佳人影</h1>
+    <audio src="./bgm.mp3" loop id="bgm"></audio>
+
+    <!-- 用于警报框的遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 警报框 -->
+    <div class="alert-box" id="alertBox">
+      <p>是否欣赏荣荣的美照?</p>
+      <button id="yesBtn">是</button>
+      <button id="noBtn">否</button>
+    </div>
+
+    <!-- 第二个警报框 -->
+    <div class="alert-box" id="secondAlertBox" style="display: none">
+      <p>再选一次</p>
+      <p>求求你了看看吧</p>
+    </div>
+
+    <div class="photo-container" id="photoContainer">
+      <!-- JavaScript将使用照片填充此部分 -->
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const photoContainer = document.getElementById('photoContainer')
+        const alertBox = document.getElementById('alertBox')
+        const overlay = document.getElementById('overlay')
+        const yesBtn = document.getElementById('yesBtn')
+        const noBtn = document.getElementById('noBtn')
+        const secondAlertBox = document.getElementById('secondAlertBox')
+        const refreshBtn = document.getElementById('refreshBtn')
+        const bgm = document.getElementById('bgm')
+        const photoCount = 52
+
+        // 显示警报框和遮罩层
+        overlay.style.display = 'block'
+        alertBox.style.display = 'block'
+
+        // 将照片加载到容器中
+        function loadPhotos() {
+          for (let i = 1; i <= photoCount; i++) {
+            const photo = document.createElement('div')
+            photo.className = 'photo'
+            const img = document.createElement('img')
+            img.src = `img/img (${i}).jpg`
+            img.alt = `Photo ${i}`
+            img.loading = 'lazy'
+            photo.appendChild(img)
+            photoContainer.appendChild(photo)
+          }
+
+          const photos = document.querySelectorAll('.photo')
+          const shuffledPhotos = Array.from(photos).sort(
+            () => Math.random() - 0.5
+          )
+
+          photoContainer.innerHTML = ''
+          shuffledPhotos.forEach((photo) => {
+            photoContainer.appendChild(photo)
+          })
+        }
+
+        // 点击“是”按钮的处理程序
+        yesBtn.addEventListener('click', function () {
+          overlay.style.display = 'none'
+          alertBox.style.display = 'none'
+          bgm.play() // 开始播放背景音乐
+          loadPhotos() // 在确认后加载照片
+        })
+
+        // 点击“否”按钮的处理程序
+        noBtn.addEventListener('click', function () {
+          alertBox.style.display = 'none'
+          secondAlertBox.style.display = 'block' // 显示第二个警报框
+
+          // 设置一个定时器，在3秒后刷新页面
+          setTimeout(function () {
+            location.reload() // 刷新页面
+          }, 1500) // 1500毫秒=1.5秒
+        })
+
+        // 点击“刷新”按钮的处理程序
+        refreshBtn.addEventListener('click', function () {
+          location.reload() // 刷新页面
+        })
+      })
+
+      // 当前浏览器窗口不在页面时修改标题内容
+      let pageTitle = '不许走~回来看荣荣~'
+      let originalTitle = document.title
+
+      function handleVisibilityChange() {
+        if (document.hidden) {
+          document.title = pageTitle
+        } else {
+          document.title = originalTitle
+        }
+      }
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+    </script>
+
+    <!-- <script>
+  window.addEventListener('scroll', function () {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+      const alertBox = document.getElementById('alertBox')
+      alertBox.innerHTML = '没有啦~~<br>上滑试试'
+      alertBox.style.display = 'block'
+      const photoContainer = document.getElementById('photoContainer')
+      photoContainer.style.filter = 'blur(5px)' // 模糊照片墙背景
+    } else {
+      const photoContainer = document.getElementById('photoContainer')
+      photoContainer.style.filter = 'none' // 恢复正常照片墙背景
+      alertBox.innerHTML = ''
+      alertBox.style.display = 'none'
+    }
+  })  </script> -->
+
+    <script src="https://cdn.jsdelivr.net/gh/wallleap/cdn@latest/js/sakura.js"></script>
+  </body>
+</html>
